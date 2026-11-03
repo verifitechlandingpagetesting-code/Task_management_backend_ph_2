@@ -1483,13 +1483,13 @@ describe("In-app Google reconnect", () => {
   test("only admins get a sign-in link; it returns to GOOGLE_REDIRECT_URI with a one-time state", async () => {
     process.env.GOOGLE_CLIENT_ID = "test-client.apps.googleusercontent.com";
     process.env.GOOGLE_CLIENT_SECRET = "test-secret";
-    process.env.GOOGLE_REDIRECT_URI = "http://localhost:5000/oauth2callback";
+    process.env.GOOGLE_REDIRECT_URI = "https://task-management-backend-ph-2.onrender.com/oauth2callback";
     try {
       assert.equal((await call("POST", "/api/google/connect-url", { token: T.alice })).status, 403);
       const r = await call("POST", "/api/google/connect-url", { token: T.adminA });
       assert.equal(r.status, 200);
       const url = new URL(r.data.data.url);
-      assert.equal(url.searchParams.get("redirect_uri"), "http://localhost:5000/oauth2callback");
+      assert.equal(url.searchParams.get("redirect_uri"), "https://task-management-backend-ph-2.onrender.com/oauth2callback");
       assert.match(url.searchParams.get("scope"), /calendar\.events/);
       const state = url.searchParams.get("state");
       assert.ok(state && state.length >= 32);

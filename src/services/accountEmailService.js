@@ -26,7 +26,7 @@ const getTransporter = () => {
 };
 
 export const frontendUrl = () =>
-  (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+  (process.env.FRONTEND_URL || "https://task-mangement-frontend-ph-2.vercel.app").replace(/\/$/, "");
 
 export const escapeHtml = (value = "") =>
   String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);

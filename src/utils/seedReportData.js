@@ -138,7 +138,7 @@ const seed = async () => {
     });
 
     console.log("\nNext step: test in Postman →");
-    console.log("GET http://localhost:5000/api/reports/summary?dateRange=All%20time");
+    console.log("GET https://task-management-backend-ph-2.onrender.com/api/reports/summary?dateRange=All%20time");
 
     await mongoose.connection.close();
     process.exit(0);

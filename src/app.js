@@ -46,8 +46,8 @@ export const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const allowedOrigins = [
-  "https://task-management-backend-ph-2.onrender.com",
-  "https://task-mangement-frontend-ph-2.vercel.app",
+  "  https://task-management-backend-ph-2.onrender.com",
+  " https://task-mangement-frontend-ph-2.vercel.app",
 ];
 
 // ==================== SOCKET.IO ====================
