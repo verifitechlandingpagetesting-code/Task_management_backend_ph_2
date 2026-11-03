@@ -46,8 +46,8 @@ export const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
+  "https://task-management-backend-ph-2.onrender.com",
+  "https://task-mangement-frontend-ph-2.vercel.app",
 ];
 
 // ==================== SOCKET.IO ====================
