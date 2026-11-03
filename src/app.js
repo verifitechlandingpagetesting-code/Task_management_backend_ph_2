@@ -46,8 +46,10 @@ export const server = http.createServer(app);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const allowedOrigins = [
-  "  https://task-management-backend-ph-2.onrender.com",
-  " https://task-mangement-frontend-ph-2.vercel.app",
+  "http://localhost:5173", // local dev (Vite)
+  "https://task-mangement-frontend-ph-2.vercel.app", // Vercel frontend
+  // optional: extra origins from Render env var, comma-separated
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((o) => o.trim()) : []),
 ];
 
 // ==================== SOCKET.IO ====================
