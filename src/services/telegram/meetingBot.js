@@ -258,6 +258,7 @@ const createMeetingFromWizard = async (chatId, messageId, me, s) => {
   const lines = [`✅ ${esc(res.message || "Meeting scheduled")}`];
   if (info.videoLink) lines.push(`🎥 ${esc(info.videoLink)}`);
   if (info.invitationSent) lines.push("📧 Invitation emailed to the attendees.");
+  else if (info.invitationQueued) lines.push("📧 Invitation is being emailed to the attendees.");
   else if (info.warning) lines.push(`⚠️ ${esc(info.warning)}`);
   return editOrSend(chatId, messageId, lines.join("\n"), {
     reply_markup: { inline_keyboard: [[{ text: "📄 Open meeting", callback_data: `m:${res.data._id}` }]] },

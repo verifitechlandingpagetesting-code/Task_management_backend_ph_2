@@ -17,6 +17,9 @@ const transporter = isTest ? nodemailer.createTransport({ jsonTransport: true })
     user: process.env.SMTP_USER?.trim(),
     pass: process.env.SMTP_PASS?.trim().replace(/\s+/g, ""),
   },
+  connectionTimeout: 10000, // fail fast instead of hanging the request
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 });
 
 const BRAND = {

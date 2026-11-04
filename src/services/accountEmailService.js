@@ -20,6 +20,11 @@ const getTransporter = () => {
       port,
       secure: port === 465,
       auth: { user: smtpUser(), pass: smtpPass() },
+      // Fail fast: without these, a blocked SMTP port hangs the request ~2 min,
+      // the admin clicks Save again and gets "Email already exists".
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
   }
   return transporter;

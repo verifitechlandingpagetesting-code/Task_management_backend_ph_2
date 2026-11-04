@@ -556,6 +556,14 @@ export const startTelegramBot = async () => {
     return;
   }
   if (running) return;
+  // Only ONE server may poll a bot token. Telegram gives each message to just one poller and
+  // the bot keeps form progress in memory, so a second copy (e.g. a laptop next to Render)
+  // makes forms randomly fail. Set TELEGRAM_POLLING=false on every copy except production;
+  // those copies still SEND notifications, they just don't receive bot messages.
+  if (String(process.env.TELEGRAM_POLLING || "").toLowerCase() === "false") {
+    console.log("ℹ️  Telegram bot polling off (TELEGRAM_POLLING=false) — notifications still sent");
+    return;
+  }
   try {
     const info = await getBotInfo();
     await tg("deleteWebhook", { drop_pending_updates: false });

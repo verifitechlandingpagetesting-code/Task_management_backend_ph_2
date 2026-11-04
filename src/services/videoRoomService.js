@@ -68,6 +68,21 @@ export const createVideoRoomAndSendInvitation = async (meeting, options = {}) =>
   let invitationSent = false;
   let emailWarning = null;
   if (!meeting.invitationSentAt || options.resend || linkCreated || options.onlyEmails?.length || options.updated) {
+    // background: reply right away and email afterwards. SMTP can be slow or blocked on the
+    // host; waiting made the web page hang and the Telegram bot (20s limit) report a failure
+    // even though the meeting was saved. Tests stay synchronous so they can inspect the mail.
+    if (options.background && process.env.NODE_ENV !== "test") {
+      sendMeetingInvitation(meeting, { onlyEmails: options.onlyEmails, updated: options.updated })
+        .then(async (result) => {
+          if (result.sent) {
+            await Meeting.updateOne({ _id: meeting._id }, { $set: { invitationSentAt: new Date() } });
+          } else {
+            console.warn(`[meeting ${meeting._id}] invitation not sent:`, result.reason);
+          }
+        })
+        .catch((err) => console.error(`[meeting ${meeting._id}] invitation failed:`, err.message));
+      return { videoLink: meeting.videoLink, linkCreated, invitationSent: false, invitationQueued: true, emailWarning: null };
+    }
     const result = await sendMeetingInvitation(meeting, { onlyEmails: options.onlyEmails, updated: options.updated });
     if (result.sent) {
       meeting.invitationSentAt = new Date();

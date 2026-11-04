@@ -80,11 +80,12 @@ export const createMeeting = async (req, res) => {
     // Online / Hybrid → private video room for the scheduled time, link emailed to the attendees
     if (meeting.meetingType !== "Offline") {
       try {
-        const result = await createVideoRoomAndSendInvitation(meeting);
+        const result = await createVideoRoomAndSendInvitation(meeting, { background: true });
 
         integration = {
           videoLink: result.videoLink || "",
           invitationSent: result.invitationSent || false,
+          invitationQueued: result.invitationQueued || false,
           warning: result.emailWarning || null,
         };
       } catch (error) {
@@ -226,13 +227,13 @@ export const updateMeeting = async (req, res) => {
 
         let result = null;
         if (!meeting.videoRoomId) {
-          result = await createVideoRoomAndSendInvitation(meeting);
+          result = await createVideoRoomAndSendInvitation(meeting, { background: true });
           integration.invited = (meeting.attendees || []).map((a) => a.name);
         } else if (timeChanged) {
-          result = await createVideoRoomAndSendInvitation(meeting, { updated: true });
+          result = await createVideoRoomAndSendInvitation(meeting, { updated: true, background: true });
           integration.invited = (meeting.attendees || []).map((a) => a.name);
         } else if (newEmails.length) {
-          result = await createVideoRoomAndSendInvitation(meeting, { onlyEmails: newEmails });
+          result = await createVideoRoomAndSendInvitation(meeting, { onlyEmails: newEmails, background: true });
           integration.invited = (meeting.attendees || [])
             .filter((a) => newEmails.includes(String(a.email || "").toLowerCase()))
             .map((a) => a.name);

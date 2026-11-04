@@ -14,7 +14,7 @@ const validId = (id) => mongoose.Types.ObjectId.isValid(id);
  * Store the admin-set password (encrypted) + a one-time token, and email the link.
  * `user` must be a saved User document. Returns { sent, reason }.
  */
-export const issueVerification = async (user, plainPassword, reason = "welcome") => {
+export const issueVerification = async (user, plainPassword, reason = "welcome", { background = false } = {}) => {
   const token = newToken();
   user.verificationTokenHash = hashToken(token);
   user.verificationExpires = new Date(Date.now() + VERIFICATION_TTL_MS);
@@ -25,6 +25,14 @@ export const issueVerification = async (user, plainPassword, reason = "welcome")
     user.emailVerifiedAt = null;
   }
   await user.save();
+  // background: reply to the admin right away instead of waiting on SMTP (which can be
+  // slow or blocked on the host). Tests keep it synchronous so they can inspect the mail.
+  if (background && process.env.NODE_ENV !== "test") {
+    sendVerificationEmail(user, token, reason).catch((err) =>
+      console.error("[issueVerification] background send failed:", err.message)
+    );
+    return { sent: null, queued: true };
+  }
   return sendVerificationEmail(user, token, reason);
 };
 
