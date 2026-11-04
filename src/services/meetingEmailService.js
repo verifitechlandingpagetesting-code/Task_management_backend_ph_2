@@ -1,5 +1,6 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
+import { deliverMail, mailConfigured, mailProvider } from "./mailer.js";
 import { telegramMeetingNotice } from "./telegram/telegramNotify.js";
 
 const port = Number(process.env.SMTP_PORT || 587);
@@ -312,15 +313,12 @@ const joinButton = (link, label = "Video call") => link ? `
   </p>`;
 
 const sendToAttendees = async (meeting, subject, text, html, onlyEmails = null) => {
-  const smtpUser = process.env.SMTP_USER?.trim();
-  const smtpPass = process.env.SMTP_PASS?.trim().replace(/\s+/g, "");
-
-  if (!isTest && (!smtpUser || !smtpPass)) {
+  if (!isTest && !mailConfigured()) {
     return {
       sent: false,
       sentCount: 0,
       failedCount: 0,
-      reason: "Gmail SMTP credentials are missing from .env",
+      reason: "Email is not configured (set BREVO_API_KEY, RESEND_API_KEY or SMTP_USER/SMTP_PASS)",
     };
   }
 
@@ -338,17 +336,13 @@ const sendToAttendees = async (meeting, subject, text, html, onlyEmails = null) 
 
   const results = await Promise.allSettled(
     recipients.map(async (email) => {
-      const info = await transporter.sendMail({
-        from: `"${BRAND.name}" <${smtpUser || "no-reply@Blizzboard.local"}>`,
-        to: email,
-        subject,
-        text,
-        html,
-      });
+      const info = isTest
+        ? await transporter.sendMail({ from: BRAND.name, to: email, subject, text, html })
+        : await deliverMail({ fromName: BRAND.name, to: email, subject, text, html }, transporter);
       if (isTest) capturedMeetingEmails.push({ to: email, subject, text, html });
 
       console.log(
-        `Email accepted by SMTP for ${email}: ${info.messageId}`
+        `Email accepted by ${isTest ? "test" : mailProvider()} for ${email}: ${info.messageId}`
       );
 
       return info;

@@ -12,6 +12,7 @@ import {
 } from "../services/videoRoomService.js";
 import { endVideoRoom } from "../socket/meetingSocket.js";
 import { FOLDERS, removeStoredFile } from "../services/fileStorage.js";
+import { mailConfigured, mailProvider } from "../services/mailer.js";
 import {
   sendMeetingReminder,
   sendMomEmail,
@@ -438,9 +439,9 @@ export const generateMOM = async (req, res) => {
 export const getIntegrationStatus = async (req, res) => {
   try {
     // video calls are built in (WebRTC) — nothing to connect; only email can be missing
-    const email = process.env.SMTP_USER && process.env.SMTP_PASS
-      ? { ok: true }
-      : { ok: false, message: "Email (SMTP) is not configured in .env — invitations cannot be sent." };
+    const email = mailConfigured()
+      ? { ok: true, provider: mailProvider() }
+      : { ok: false, message: "Email is not configured (BREVO_API_KEY, RESEND_API_KEY or SMTP) — invitations cannot be sent." };
     res.json({ success: true, data: { video: { ok: true, provider: "webrtc" }, email } });
   } catch (error) {
     return handleError(res, error);

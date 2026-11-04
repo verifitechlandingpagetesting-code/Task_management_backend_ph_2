@@ -1,6 +1,7 @@
 // Account emails: verification (with one-time password reveal link) and
 // forgot-password notifications to the responsible administrator.
 import nodemailer from "nodemailer";
+import { deliverMail, mailConfigured } from "./mailer.js";
 
 const isTest = process.env.NODE_ENV === "test";
 
@@ -51,18 +52,16 @@ export const button = (href, label) =>
   `<p style="margin:22px 0"><a href="${href}" style="background:#16A6B8;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:700;display:inline-block">${escapeHtml(label)}</a></p>`;
 
 export const send = async ({ to, subject, text, html }) => {
-  if (!isTest && (!smtpUser() || !smtpPass())) {
-    console.warn(`[accountEmail] SMTP not configured — "${subject}" to ${to} not sent`);
-    return { sent: false, reason: "Email server (SMTP) is not configured" };
+  if (!isTest && !mailConfigured()) {
+    console.warn(`[accountEmail] email not configured — "${subject}" to ${to} not sent`);
+    return { sent: false, reason: "Email is not configured" };
   }
   try {
-    await getTransporter().sendMail({
-      from: `"Task Management Blizz board" <${smtpUser() || "no-reply@Blizzboard.local"}>`,
-      to,
-      subject,
-      text,
-      html,
-    });
+    if (isTest) {
+      await getTransporter().sendMail({ from: "test", to, subject, text, html });
+    } else {
+      await deliverMail({ fromName: "Task Management Blizz board", to, subject, text, html }, getTransporter());
+    }
     if (isTest) sentMessages.push({ to, subject, text, html });
     return { sent: true };
   } catch (err) {
