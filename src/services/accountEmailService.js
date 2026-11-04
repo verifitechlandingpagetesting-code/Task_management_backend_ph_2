@@ -1,35 +1,16 @@
 // Account emails: verification (with one-time password reveal link) and
 // forgot-password notifications to the responsible administrator.
 import nodemailer from "nodemailer";
-import { deliverMail, mailConfigured } from "./mailer.js";
+import { deliverMail, getSmtpTransporter, mailConfigured } from "./mailer.js";
 
 const isTest = process.env.NODE_ENV === "test";
 
 // In tests nothing leaves the machine — messages are captured in sentMessages.
 export const sentMessages = [];
 
-const smtpUser = () => process.env.SMTP_USER?.trim();
-const smtpPass = () => process.env.SMTP_PASS?.trim().replace(/\s+/g, "");
-
-let transporter = null;
-const getTransporter = () => {
-  if (isTest) return nodemailer.createTransport({ jsonTransport: true });
-  if (!transporter) {
-    const port = Number(process.env.SMTP_PORT || 587);
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port,
-      secure: port === 465,
-      auth: { user: smtpUser(), pass: smtpPass() },
-      // Fail fast: without these, a blocked SMTP port hangs the request ~2 min,
-      // the admin clicks Save again and gets "Email already exists".
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
-  }
-  return transporter;
-};
+// SMTP settings (Brevo relay, port 2525) live in mailer.js, shared with meeting emails
+const testTransporter = isTest ? nodemailer.createTransport({ jsonTransport: true }) : null;
+const getTransporter = () => testTransporter || getSmtpTransporter();
 
 export const frontendUrl = () =>
   (process.env.FRONTEND_URL || "https://task-mangement-frontend-ph-2.vercel.app").replace(/\/$/, "");

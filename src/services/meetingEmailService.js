@@ -1,27 +1,16 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
-import { deliverMail, mailConfigured, mailProvider } from "./mailer.js";
+import { deliverMail, getSmtpTransporter, mailConfigured, mailProvider } from "./mailer.js";
 import { telegramMeetingNotice } from "./telegram/telegramNotify.js";
 
-const port = Number(process.env.SMTP_PORT || 587);
 const timeZone = process.env.MEETING_TIME_ZONE || "Asia/Kolkata";
 
 // Tests: nothing leaves the machine — messages are captured instead
 const isTest = process.env.NODE_ENV === "test";
 export const capturedMeetingEmails = [];
 
-const transporter = isTest ? nodemailer.createTransport({ jsonTransport: true }) : nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port,
-  secure: port === 465,
-  auth: {
-    user: process.env.SMTP_USER?.trim(),
-    pass: process.env.SMTP_PASS?.trim().replace(/\s+/g, ""),
-  },
-  connectionTimeout: 10000, // fail fast instead of hanging the request
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
+// SMTP settings (Brevo relay, port 2525) live in mailer.js, shared with account emails
+const transporter = isTest ? nodemailer.createTransport({ jsonTransport: true }) : getSmtpTransporter();
 
 const BRAND = {
   name: "Task Management System",
