@@ -10,7 +10,7 @@ dotenv.config();
 // =====================================================
 
 const SUPERADMIN_EMAIL = "digital.1@verifitech.email";
-const SUPERADMIN_PASSWORD = "Task";
+const SUPERADMIN_PASSWORD = "Task@2026";
 
 const seedSuperAdmin = async () => {
   try {
